@@ -23,14 +23,13 @@ public class ImageProcessor {
                     File destinationFile;
                     if (dateTime != null) {
                         File folderDate = FileOrganizer.ensureDirectoryExists(outputDirectoryPath + "/" + dateTime);
-                        destinationFile = new File(folderDate, inputFile.getName());
+                        FileOrganizer.copyFileToDirectory(inputFile, folderDate);
                         nbrImageOk.incrementAndGet();
                     } else {
                         File folderIgnore = FileOrganizer.ensureDirectoryExists(outputDirectoryPath + "/Photos_Autres");
-                        destinationFile = new File(folderIgnore, inputFile.getName());
+                        FileOrganizer.copyFileToDirectory(inputFile, folderIgnore);
                         nbrImageNok.incrementAndGet();
                     }
-                    Files.copy(inputFile.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
