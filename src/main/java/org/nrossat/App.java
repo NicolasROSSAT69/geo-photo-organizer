@@ -10,13 +10,16 @@ import java.io.File;
 
 public class App 
 {
+    private static final String MESSAGE_CHEMIN_IMG_IN_PATTERN = "Veuillez saisir le chemin du repertoire des images :";
+    private static final String MESSAGE_CHEMIN_IMG_OUT_PATTERN = "Veuillez saisir le chemin du repertoire de sortie :";
+
     public static void main( String[] args )
     {
 
         ConsoleDisplay.displayBanner();
 
-        String inputDirectoryPath = UserInputHandler.getInputPath("Veuillez saisir le chemin du repertoire des images :");
-        String outputDirectoryPath = UserInputHandler.getInputPath("Veuillez saisir le chemin du repertoire de sortie :");
+        String inputDirectoryPath = UserInputHandler.getInputPath(MESSAGE_CHEMIN_IMG_IN_PATTERN);
+        String outputDirectoryPath = UserInputHandler.getInputPath(MESSAGE_CHEMIN_IMG_OUT_PATTERN);
 
         File[] inputFiles = ImageFileFilter.filterImageFiles(new File(inputDirectoryPath));
         if (inputFiles == null || inputFiles.length == 0) {

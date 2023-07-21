@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ImageProcessor {
+
+    private static final String NAME_FOLDER_IGNORE_PATTERN = "Photos_Autres";
     public static void organizeByDate(File[] inputFiles, String outputDirectoryPath) {
         AtomicInteger nbrImageOk = new AtomicInteger(0);
         AtomicInteger nbrImageNok = new AtomicInteger(0);
@@ -26,7 +28,7 @@ public class ImageProcessor {
                         FileOrganizer.copyFileToDirectory(inputFile, folderDate);
                         nbrImageOk.incrementAndGet();
                     } else {
-                        File folderIgnore = FileOrganizer.ensureDirectoryExists(outputDirectoryPath + "/Photos_Autres");
+                        File folderIgnore = FileOrganizer.ensureDirectoryExists(outputDirectoryPath + "/" + NAME_FOLDER_IGNORE_PATTERN);
                         FileOrganizer.copyFileToDirectory(inputFile, folderIgnore);
                         nbrImageNok.incrementAndGet();
                     }
@@ -37,6 +39,6 @@ public class ImageProcessor {
         });
 
         ConsoleDisplay.displayMessage(nbrImageOk.get() + " images triées");
-        ConsoleDisplay.displayMessage(nbrImageNok.get() + " images non triées, elles sont rangées dans le dossier Photos_Autres");
+        ConsoleDisplay.displayMessage(nbrImageNok.get() + " images non triées, elles sont rangées dans le dossier " + NAME_FOLDER_IGNORE_PATTERN);
     }
 }
