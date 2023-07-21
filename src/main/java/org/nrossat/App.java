@@ -19,6 +19,15 @@ public class App
     public static void main( String[] args )
     {
 
+        displayBanner();
+        String inputDirectoryPath = getInputPath("Veuillez saisir le chemin du repertoire des images :");
+        String outputDirectoryPath = getInputPath("Veuillez saisir le chemin du repertoire de sortie :");
+
+        processImages(inputDirectoryPath, outputDirectoryPath);
+
+    }
+
+    private static void displayBanner() {
         System.out.println("###############################");
         System.out.println("#                             #");
         System.out.println("#         Application         #");
@@ -30,103 +39,102 @@ public class App
         System.out.println("#                             #");
         System.out.println("###############################");
         System.out.println();
+    }
 
-        //Chemin du répértoire des images de départ
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Veuillez saisir le chemin du repertoire des images : (/Users/nicolas/Pictures/monrepertoire)");
-        String _inputDirectoryPath = sc.nextLine();
-        String inputDirectoryPath = _inputDirectoryPath;
+    private static String getInputPath(String message) {
+        System.out.println(message);
+        return new Scanner(System.in).nextLine();
+    }
 
-        //Chemin du dossier de sortie des images redimensionner
-        System.out.println("Veuillez saisir le chemin du repertoire de sortie : (/Users/nicolas/Pictures/monrepertoiresortie)");
-        String _outputDirectoryPath = sc.nextLine();
-        String outputDirectoryPath = _outputDirectoryPath;
+    private static File[] getInputFiles(File inputDirectory) {
+        return inputDirectory.listFiles((dir, name) ->
+                name.toLowerCase().matches(".*\\.(jpg|png|jpeg|heic)$")
+        );
+    }
 
+    private static void processImages(String inputDirectoryPath, String outputDirectoryPath) {
         File inputDirectory = new File(inputDirectoryPath);
-        File outputDirectory = new File(outputDirectoryPath);
+        File[] inputFiles = getInputFiles(inputDirectory);
 
-        //Vérif si le dossier de sortie des images redimensionnées existe sinon il le crée
-        if (!outputDirectory.exists()) {
-            outputDirectory.mkdirs();
+        if (inputFiles == null || inputFiles.length == 0) {
+            System.out.println("Aucun fichier image trouvé dans le dossier d'entrée.");
+            return;
         }
 
-        // Liste les images présentes dans le dossier d'entrée qui ont comme extension (Jpg, Png, jpeg, heic)
-        File[] inputFiles = inputDirectory.listFiles((dir, name) -> name.toLowerCase().endsWith(".jpg") || name.toLowerCase().endsWith(".png") || name.toLowerCase().endsWith(".jpeg") || name.toLowerCase().endsWith(".heic"));
+        File outputDirectory = ensureDirectoryExists(outputDirectoryPath);
+        processImageFiles(inputFiles, inputDirectoryPath, outputDirectoryPath);
+    }
 
-        if (inputFiles != null) {
-            AtomicInteger nbrImageOk = new AtomicInteger(0);
-            AtomicInteger nbrImageNok = new AtomicInteger(0);
-            //Lancement du chrono
-            long startTime = System.currentTimeMillis();
+    private static File ensureDirectoryExists(String directoryPath) {
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        return directory;
+    }
 
-            Arrays.stream(inputFiles)
-                    .parallel()
-                    .forEach(inputFile -> {
+    private static void processImageFiles(File[] inputFiles, String inputDirectoryPath, String outputDirectoryPath) {
+        AtomicInteger nbrImageOk = new AtomicInteger(0);
+        AtomicInteger nbrImageNok = new AtomicInteger(0);
 
-                        File imageFile = new File(inputDirectoryPath+"/"+inputFile.getName());
+        long startTime = System.currentTimeMillis();
 
-                        try {
-                            Metadata metadata = ImageMetadataReader.readMetadata(imageFile);
+        Arrays.stream(inputFiles).parallel().forEach(inputFile -> {
+            File imageFile = new File(inputDirectoryPath+"/"+inputFile.getName());
 
-                            // Récupérer et afficher la date/heure
-                            ExifIFD0Directory exifIFD0Directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+            try {
+                Metadata metadata = ImageMetadataReader.readMetadata(imageFile);
 
-                            if (exifIFD0Directory != null) {
+                // Récupérer et afficher la date/heure
+                ExifIFD0Directory exifIFD0Directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
 
-                                String dateTime = exifIFD0Directory.getString(ExifIFD0Directory.TAG_DATETIME);
+                if (exifIFD0Directory != null) {
 
-                                if (dateTime != null){
-                                    dateTime = dateTime.split(" ")[0];
-                                    dateTime = dateTime.replace(':', '-');
-                                    String folderDateDir = outputDirectoryPath + "/" + dateTime;
-                                    File folderDate = new File(folderDateDir);
+                    String dateTime = exifIFD0Directory.getString(ExifIFD0Directory.TAG_DATETIME);
 
-                                    if (!folderDate.exists()){
-                                        folderDate.mkdirs();
-                                    }
+                    if (dateTime != null){
+                        dateTime = dateTime.split(" ")[0];
+                        dateTime = dateTime.replace(':', '-');
+                        String folderDateDir = outputDirectoryPath + "/" + dateTime;
+                        File folderDate = new File(folderDateDir);
 
-                                    // Copie du fichier vers le nouveau dossier
-                                    File destinationFile = new File(folderDate, inputFile.getName());
-                                    Files.copy(inputFile.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-                                    nbrImageOk.incrementAndGet();
-                                }
-                                else {
-
-
-                                    String folderIgnoreDir = outputDirectoryPath + "/Photos_Autres";
-                                    File folderIgnore = new File(folderIgnoreDir);
-
-                                    if (!folderIgnore.exists()){
-                                        folderIgnore.mkdirs();
-                                    }
-
-                                    // Copie du fichier vers le nouveau dossier
-                                    File destinationFile = new File(folderIgnore, inputFile.getName());
-                                    Files.copy(inputFile.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                                    nbrImageNok.incrementAndGet();
-
-                                }
-
-                            }
-
-                        } catch (ImageProcessingException | IOException e) {
-                            e.printStackTrace();
+                        if (!folderDate.exists()){
+                            folderDate.mkdirs();
                         }
 
-                    });
+                        // Copie du fichier vers le nouveau dossier
+                        File destinationFile = new File(folderDate, inputFile.getName());
+                        Files.copy(inputFile.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-            //Arrêt du chrono
-            long endTime = System.currentTimeMillis();
-            //Calcul de la différence
-            long elapsedTime = endTime - startTime;
-            System.out.println("Temps de traitement des images : " + elapsedTime + " ms");
-            System.out.println(nbrImageOk + " images triées");
-            System.out.println(nbrImageNok + " images non triées, elles sont rangées dans le dossier Photos_Autres");
+                        nbrImageOk.incrementAndGet();
+                    }
+                    else {
 
-        } else {
-            System.out.println("Aucun fichier image trouvé dans le dossier d'entrée.");
-        }
 
+                        String folderIgnoreDir = outputDirectoryPath + "/Photos_Autres";
+                        File folderIgnore = new File(folderIgnoreDir);
+
+                        if (!folderIgnore.exists()){
+                            folderIgnore.mkdirs();
+                        }
+
+                        // Copie du fichier vers le nouveau dossier
+                        File destinationFile = new File(folderIgnore, inputFile.getName());
+                        Files.copy(inputFile.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        nbrImageNok.incrementAndGet();
+
+                    }
+
+                }
+
+            } catch (ImageProcessingException | IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        long elapsedTime = System.currentTimeMillis() - startTime;
+        System.out.println("Temps de traitement des images : " + elapsedTime + " ms");
+        System.out.println(nbrImageOk + " images triées");
+        System.out.println(nbrImageNok + " images non triées, elles sont rangées dans le dossier Photos_Autres");
     }
 }
