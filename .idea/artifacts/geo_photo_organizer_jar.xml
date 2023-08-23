@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="geo-photo-organizer:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/geo_photo_organizer_jar</output-path>
+    <root id="archive" name="geo-photo-organizer.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="geo-photo-organizer" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/drewnoakes/metadata-extractor/2.18.0/metadata-extractor-2.18.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/adobe/xmp/xmpcore/6.1.11/xmpcore-6.1.11.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

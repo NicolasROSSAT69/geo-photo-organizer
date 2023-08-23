@@ -5,8 +5,6 @@ import org.nrossat.io.FileOrganizer;
 import org.nrossat.ui.ConsoleDisplay;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
